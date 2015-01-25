@@ -278,6 +278,7 @@ chkDecimal:
 		return VAL_ERR_NUM(s) - VAL_ERR_NUM(s);
 
 	case REB_OBJECT:
+	case REB_UTYPE:
 	case REB_MODULE:
 	case REB_PORT:
 		return VAL_OBJ_FRAME(s) - VAL_OBJ_FRAME(t);

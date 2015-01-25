@@ -284,6 +284,7 @@ static void Mark_Series(REBSER *series, REBCNT depth);
 		case REB_MODULE:
 			if (VAL_MOD_BODY(val)) CHECK_MARK(VAL_MOD_BODY(val), depth);
 		case REB_OBJECT:
+		case REB_UTYPE:
 			// Object is just a block with special first value (context):
 mark_obj:
 			if (!IS_MARK_SERIES(VAL_OBJ_FRAME(val))) {

@@ -23,13 +23,13 @@
 **  Summary: user defined datatype
 **  Section: datatypes
 **  Author:  Carl Sassenrath
-**  Notes:   NOT IMPLEMENTED
+**  Notes:   Implemented by giuliolunati@gmail.com
 **
 ***********************************************************************/
 
 #include "sys-core.h"
 
-#define	SET_UTYPE(v,f) VAL_UTYPE_FUNC(v) = (f), VAL_UTYPE_DATA(v) = 0, VAL_SET(v, REB_UTYPE)
+#define	SET_UTYPE(v,f) VAL_OBJ_FRAME(v) = (f), VAL_SET(v, REB_UTYPE)
 
 
 /***********************************************************************
@@ -60,35 +60,93 @@
 {
 	REBVAL *value = D_ARG(1);
 	REBVAL *arg = D_ARG(2);
-	REBVAL *spec;
-	REBVAL *body;
+	REBINT n;
+	REBVAL *val;
+	REBSER *obj, *src_obj;
+	REBCNT type = 0;
 
-	if (action == A_MAKE) {
-		// MAKE udef! [spec body]
-		if (IS_DATATYPE(value)) {
-			if (!IS_BLOCK(arg)) Trap_Arg(arg);
-			spec = VAL_BLK(arg);
-			if (!IS_BLOCK(spec)) Trap_Arg(arg);
-			body = VAL_BLK_SKIP(arg, 1);
-			if (!IS_BLOCK(body)) Trap_Arg(arg);
+	switch (action) {
 
-			spec = Get_System(SYS_STANDARD, STD_UTYPE);
-			if (!IS_OBJECT(spec)) Trap_Arg(spec);
-			SET_UTYPE(D_RET, Make_Object(VAL_OBJ_FRAME(spec), body));
-			VAL_UTYPE_DATA(D_RET) = 0;
-			return R_RET;
+	case A_MAKE:
+		if (IS_DATATYPE(value) && (REB_UTYPE == VAL_DATATYPE(value))) {
+
+			if (! IS_BLOCK(arg)) Trap_Make(REB_UTYPE, arg);
+
+			// make utype! [init]
+			obj = Make_Object(0, VAL_BLK_DATA(arg));
+			SET_UTYPE(ds, obj); // GC save
+			arg = Do_Bind_Block(obj, arg); // GC-OK
+			break; // returns obj
 		}
-		else Trap_Arg(arg);
+
+		// make parent ....
+		if (IS_UTYPE(value) || IS_OBJECT(value)) {
+			src_obj  = VAL_OBJ_FRAME(value);
+
+			// make parent none | []
+			if (IS_NONE(arg) || (IS_BLOCK(arg) && IS_EMPTY(arg))) {
+				obj = Copy_Block_Values(src_obj, 0, SERIES_TAIL(src_obj), TS_CLONE);
+				Rebind_Frame(src_obj, obj);
+				break;	// returns obj
+			}
+
+			// make parent [...]
+			if (IS_BLOCK(arg)) {
+				obj = Make_Object(src_obj, VAL_BLK_DATA(arg));
+				Rebind_Frame(src_obj, obj);
+				SET_UTYPE(ds, obj);
+				arg = Do_Bind_Block(obj, arg); // GC-OK
+				break; // returns obj
+			}
+
+			// make parent object|utype
+			if (IS_UTYPE(arg) || IS_OBJECT(arg)) {
+				obj = Merge_Frames(src_obj, VAL_OBJ_FRAME(arg));
+				break; // returns obj
+			}
+		}
+		Trap_Make(VAL_TYPE(value), value);
+
+	case A_COPY:
+		// Note: words are not copied and bindings not changed!
+	{
+		REBU64 types = 0;
+		if (D_REF(ARG_COPY_PART)) Trap0(RE_BAD_REFINES);
+		if (D_REF(ARG_COPY_DEEP)) {
+			types |= CP_DEEP | (D_REF(ARG_COPY_TYPES) ? 0 : TS_STD_SERIES);
+		}
+		if D_REF(ARG_COPY_TYPES) {
+			arg = D_ARG(ARG_COPY_KINDS);
+			if (IS_DATATYPE(arg)) types |= TYPESET(VAL_DATATYPE(arg));
+			else types |= VAL_TYPESET(arg);
+		}
+		VAL_OBJ_FRAME(value) = obj = Copy_Block(VAL_OBJ_FRAME(value), 0);
+		if (types != 0) Copy_Deep_Values(obj, 1, SERIES_TAIL(obj), types);
+		break; // returns value
+	}
+	case A_REFLECT:
+		action = What_Reflector(arg); // zero on error
+		if (action == OF_SPEC) {
+			if (!VAL_MOD_SPEC(value)) return R_NONE;
+			VAL_OBJ_FRAME(value) = VAL_MOD_SPEC(value);
+			VAL_SET(value, REB_OBJECT);
+			break;
+		}
+		// Adjust for compatibility with PICK:
+		if (action == OF_VALUES) action = 2;
+		else if (action == OF_BODY) action = 3;
+		if (action < 1 || action > 3) Trap_Reflect(VAL_TYPE(value), arg);
+		if (THROWN(value)) Trap0(RE_THROW_USAGE);
+		Set_Block(value, Make_Object_Block(VAL_OBJ_FRAME(value), action));
+		break;
+
+	default:
+		Trap_Action(VAL_TYPE(value), action);
 	}
 
-	if (!IS_UTYPE(value)) Trap1(RE_INVALID_TYPE, Get_Type(REB_UTYPE));
-//	if (!VAL_UTYPE_DATA(D_RET) || SERIES_TAIL(VAL_UTYPE_FUNC(value)) <= action)
-//		Trap_Action(REB_UTYPE, action);
+	VAL_SET(value, REB_UTYPE);
+	VAL_OBJ_FRAME(value) = obj;
 
-	body = OFV(VAL_UTYPE_FUNC(value), action);
-	if (!IS_FUNCTION(body)) Trap_Action(REB_UTYPE, action);
-
-	Do_Function(body);
-
+	DS_RET_VALUE(value);
 	return R_RET;
 }

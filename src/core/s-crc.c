@@ -243,6 +243,7 @@ static REBCNT *CRC_Table;
 		break;
 
 	case REB_OBJECT:
+	case REB_UTYPE:
 		ret = ((REBCNT)VAL_OBJ_FRAME(val)) >> 4;
 		break;
 

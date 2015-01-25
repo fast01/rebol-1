@@ -435,6 +435,7 @@ extern const REBYTE Str_Banner[];
 **
 ***********************************************************************/
 {
+	/*
 	REBSER *frm = Make_Frame(A_MAX_ACTION-1);
 	REBVAL *obj;
 	REBINT n;
@@ -448,6 +449,7 @@ extern const REBYTE Str_Banner[];
 
 	obj = Get_System(SYS_STANDARD, STD_UTYPE);
 	SET_OBJECT(obj, frm);
+	*/
 }
 
 
@@ -603,7 +605,7 @@ extern const REBYTE Str_Banner[];
 	value = Get_System(SYS_CATALOG, CAT_ACTIONS);
 	Set_Block(value, Collect_Set_Words(VAL_BLK(&Boot_Block->actions)));
 
-	// Create system/catalog/nativess block:
+	// Create system/catalog/natives block:
 	value = Get_System(SYS_CATALOG, CAT_NATIVES);
 	Set_Block(value, Collect_Set_Words(VAL_BLK(&Boot_Block->natives)));
 
@@ -616,7 +618,7 @@ extern const REBYTE Str_Banner[];
 //	value = Get_System(SYS_WORDS, 0);
 //	SET_OBJECT(value, Lib_Context);
 
-	Init_UType_Proto();
+	//Init_UType_Proto();
 }
 
 

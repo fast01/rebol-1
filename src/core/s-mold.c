@@ -1214,6 +1214,7 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 	case REB_OBJECT:
 	case REB_MODULE:
 	case REB_PORT:
+	case REB_UTYPE:
 		if (!molded) Form_Object(value, mold);
 		else Mold_Object(value, mold);
 		break;
@@ -1251,7 +1252,6 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 	case REB_HANDLE:
 	case REB_STRUCT:
 	case REB_LIBRARY:
-	case REB_UTYPE:
 		// Value has no printable form, so just print its name.
 		if (!molded) Emit(mold, "?T?", value);
 		else Emit(mold, "+T", value);

@@ -100,5 +100,5 @@ REBOL [
 	handle      self        0           -        -       -      -   -  
 	struct      invalid     0           -        -       -      -   -  
 	library     invalid     0           -        -       -      -   -  
-	utype       self        utype       -        -       -      -   -  
+	utype       self        utype       -        -       object -   -  
 
