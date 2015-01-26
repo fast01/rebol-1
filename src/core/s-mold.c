@@ -31,7 +31,9 @@
 #include "sys-core.h"
 #include "sys-scan.h"
 #include <float.h>
+#include "reb-utype.h"
 
+#define	VAL_STRING(v)		STR_HEAD(VAL_SERIES(v))
 #define STOID static void
 
 #define	MAX_QUOTED_STR	50	// max length of "string" before going to { }
@@ -1013,8 +1015,9 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 ***********************************************************************/
 {
 	REBYTE buf[60];
-	REBINT len;
+	REBINT len, n;
 	REBSER *ser = mold->series;
+	REBVAL *f;
 
 	CHECK_STACK(&len);
 
@@ -1214,7 +1217,6 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 	case REB_OBJECT:
 	case REB_MODULE:
 	case REB_PORT:
-	case REB_UTYPE:
 		if (!molded) Form_Object(value, mold);
 		else Mold_Object(value, mold);
 		break;
@@ -1256,6 +1258,32 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 		if (!molded) Emit(mold, "?T?", value);
 		else Emit(mold, "+T", value);
 		break;
+
+	case REB_UTYPE:
+		if (!molded) {
+			f = GET_UTYPE_METHOD(".FORM",value);
+			if (f && ANY_FUNC(f)) goto custom;
+			Form_Object(value, mold);
+		} else {
+			f = GET_UTYPE_METHOD(".MOLD",value);
+			if (f && ANY_FUNC(f)) goto custom;
+			Mold_Object(value, mold);
+		}
+		break;
+
+custom:
+		// backup mold->series->data
+		// because Apply_Func can overwrite it !!
+		n = SERIES_TAIL(mold->series);
+		len = SERIES_WIDE(mold->series) * (n + 1);
+		void *buf = malloc(len);
+		memcpy(buf, SERIES_DATA(mold->series), len);
+		f = Apply_Func(0,f,value,0);
+		memcpy(SERIES_DATA(mold->series), buf, len);
+		free(buf);
+		mold->series->tail = n;
+		Append_Bytes(mold->series, VAL_STRING(f));
+		return;
 
 	case REB_END:
 	case REB_UNSET:

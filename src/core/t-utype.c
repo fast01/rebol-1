@@ -28,6 +28,7 @@
 ***********************************************************************/
 
 #include "sys-core.h"
+#include "reb-utype.h"
 
 #define	SET_UTYPE(v,f) VAL_OBJ_FRAME(v) = (f), VAL_SET(v, REB_UTYPE)
 
@@ -150,3 +151,19 @@
 	DS_RET_VALUE(value);
 	return R_RET;
 }
+
+/***********************************************************************
+**
+*/	REBVAL *Try_Utype_Method(REBVAL *ds, REBYTE *word)
+/*
+***********************************************************************/
+{
+	REBVAL *f;
+	if (!D_ARG(1) || ! IS_UTYPE(D_ARG(1))) return NULL;
+	f = GET_UTYPE_METHOD(word,D_ARG(1));
+	if (!f || !IS_FUNCTION(f)) Trap_Arg(D_ARG(1));
+	f =  Apply_Func(0,f,D_ARG(1),D_ARG(2),D_ARG(3),D_ARG(4),D_ARG(5),D_ARG(7),D_ARG(7),D_ARG(8),D_ARG(9),0);
+	DS_RET_VALUE(f);
+	return f;
+}
+
