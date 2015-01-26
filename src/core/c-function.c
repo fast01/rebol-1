@@ -381,19 +381,25 @@
 {
 	REBVAL *ds = DS_RETURN;
 	REBCNT type = VAL_TYPE(D_ARG(1));
+	REBCNT act = VAL_FUNC_ACT(func);
 
 	Eval_Natives++;
 
 	ASSERT1(type < REB_MAX, RP_BAD_TYPE_ACTION);
 
 	// Handle special datatype test cases (eg. integer?)
-	if (VAL_FUNC_ACT(func) == 0) {
+	if (act == 0) {
 		VAL_SET(D_RET, REB_LOGIC);
 		VAL_LOGIC(D_RET) = (type == VAL_INT64(BLK_LAST(VAL_FUNC_SPEC(func))));
 		return;
 	}
 
-	Do_Act(D_RET, type, VAL_FUNC_ACT(func));
+	// non-utype OP utype => use utype action
+	if (( IS_BINARY_ACT(act) || act == A_TO)
+		&& (VAL_TYPE(D_ARG(2)) == REB_UTYPE)
+		&& (type != REB_UTYPE)
+	) type = REB_UTYPE;
+	Do_Act(D_RET, type, act);
 }
 
 
