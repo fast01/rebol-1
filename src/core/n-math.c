@@ -48,7 +48,6 @@ const double pi2 = 2.0 * 3.14159265358979323846;
 
 enum {SINE, COSINE, TANGENT};
 
-
 /***********************************************************************
 **
 */	static REBDEC Trig_Value(REBVAL *ds, REBCNT which)
@@ -109,6 +108,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".COSINE")) return R_RET;
 	REBDEC dval = cos(Trig_Value(ds, COSINE));
 	if (fabs(dval) < DBL_EPSILON) dval = 0.0;
 	SET_DECIMAL(D_RET, dval);
@@ -122,6 +122,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".SINE")) return R_RET;
 	REBDEC dval = sin(Trig_Value(ds, SINE));
 	if (fabs(dval) < DBL_EPSILON) dval = 0.0;
 	SET_DECIMAL(D_RET, dval);
@@ -135,6 +136,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".TANGENT")) return R_RET;
 	REBDEC dval = Trig_Value(ds, TANGENT);
 	if (Eq_Decimal(fabs(dval), pi1 / 2.0)) Trap0(RE_OVERFLOW);
 	SET_DECIMAL(D_RET, tan(dval));
@@ -148,6 +150,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".ARCCOSINE")) return R_RET;
 	Arc_Trans(ds, COSINE);
 	return R_RET;
 }
@@ -159,6 +162,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".ARCSINE")) return R_RET;
 	Arc_Trans(ds, SINE);
 	return R_RET;
 }
@@ -170,10 +174,10 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".ARCTANGENT")) return R_RET;
 	Arc_Trans(ds, TANGENT);
 	return R_RET;
 }
-
 
 /***********************************************************************
 **
@@ -181,6 +185,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".EXP")) return R_RET;
 	REBDEC	dval = AS_DECIMAL(D_ARG(1));
 	static REBDEC eps = EPS;
 
@@ -197,6 +202,8 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	
+	if (Try_Utype_Method(ds, ".LOG-10")) return R_RET;
 	REBDEC dval = AS_DECIMAL(D_ARG(1));
 	if (dval <= 0) Trap0(RE_POSITIVE);
 	SET_DECIMAL(D_RET, log10(dval));
@@ -210,6 +217,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".LOG-2")) return R_RET;
 	REBDEC dval = AS_DECIMAL(D_ARG(1));
 	if (dval <= 0) Trap0(RE_POSITIVE);
 	SET_DECIMAL(D_RET, log(dval) / LOG2);
@@ -223,11 +231,13 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".LOG-E")) return R_RET;
 	REBDEC dval = AS_DECIMAL(D_ARG(1));
 	if (dval <= 0) Trap0(RE_POSITIVE);
 	SET_DECIMAL(D_RET, log(dval));
 	return R_RET;
 }
+
 
 
 /***********************************************************************
@@ -236,6 +246,7 @@ enum {SINE, COSINE, TANGENT};
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".SQUARE-ROOT")) return R_RET;
 	REBDEC dval = AS_DECIMAL(D_ARG(1));
 	if (dval < 0) Trap0(RE_POSITIVE);
 	SET_DECIMAL(D_RET, sqrt(dval));
