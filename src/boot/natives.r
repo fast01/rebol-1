@@ -1056,24 +1056,24 @@ lesser-or-equal?: native [
 
 minimum: native [
 	{Returns the lesser of the two values.}
-	value1 [scalar! date! series!]
-	value2 [scalar! date! series!]
+	value1 [scalar! date! series! utype!]
+	value2 [scalar! date! series! utype!]
 ]
 
 maximum: native [ ; Note: Some datatypes expect all binary ops to be <= this
 	{Returns the greater of the two values.}
-	value1 [scalar! date! series!]
-	value2 [scalar! date! series!]
+	value1 [scalar! date! series! utype!]
+	value2 [scalar! date! series! utype!]
 ]
 
 negative?: native [
 	{Returns TRUE if the number is negative.}
-	number [number! money! time! pair!]
+	number [number! money! time! pair! utype!]
 ]
 
 positive?: native [
 	{Returns TRUE if the value is positive.}
-	number [number! money! time! pair!]
+	number [number! money! time! pair! utype!]
 ]
 
 zero?: native [

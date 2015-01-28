@@ -322,6 +322,12 @@ enum {SINE, COSINE, TANGENT};
 	if (ta != tb) {
 		if (strictness > 1) return FALSE;
 
+		if ((ta == REB_UTYPE)
+				|| (tb == REB_UTYPE)) {
+			ta = REB_UTYPE;
+			goto compare;
+		}
+
 		switch (ta) {
 		case REB_INTEGER:
 			if (tb == REB_DECIMAL || tb == REB_PERCENT) {
@@ -386,7 +392,7 @@ enum {SINE, COSINE, TANGENT};
 
 compare:
 	// At this point, both args are of the same datatype.
-	if (!(code = Compare_Types[VAL_TYPE(a)])) return FALSE;
+	if (!(code = Compare_Types[ta])) return FALSE;
 	result = code(a, b, strictness);
 	if (result < 0) Trap2(RE_INVALID_COMPARE, Of_Type(a), Of_Type(b));
 	return result;
@@ -547,7 +553,9 @@ compare:
 {
 	REBVAL *val = &DS_Base[++DSP];
 	CLEARS(val);
-	VAL_SET(val, VAL_TYPE(D_ARG(1)));
+	if (VAL_TYPE(D_ARG(1)) == REB_UTYPE)
+		VAL_SET(val, REB_INTEGER);
+	else VAL_SET(val, VAL_TYPE(D_ARG(1)));
 	if (Compare_Values(D_ARG(1), D_ARG(2), -1)) return R_FALSE;
 	return R_TRUE;
 }
@@ -560,7 +568,9 @@ compare:
 {
 	REBVAL *val = &DS_Base[++DSP];
 	CLEARS(val);
-	VAL_SET(val, VAL_TYPE(D_ARG(1)));
+	if (VAL_TYPE(D_ARG(1)) == REB_UTYPE)
+		VAL_SET(val, REB_INTEGER);
+	else VAL_SET(val, VAL_TYPE(D_ARG(1)));
 	if (Compare_Values(D_ARG(1), D_ARG(2), -2)) return R_TRUE;
 	return R_FALSE;
 }
@@ -573,10 +583,13 @@ compare:
 {
 	REBCNT type = VAL_TYPE(D_ARG(1));
 
+	REBVAL *val = &DS_Base[++DSP];
+	CLEARS(val);
 	if (type >= REB_INTEGER && type <= REB_TIME) {
-		REBVAL *val = &DS_Base[++DSP];
-		CLEARS(val);
 		VAL_SET(val, type);
+		if (Compare_Values(D_ARG(1), D_ARG(2), 1)) return R_TRUE;
+	} else if (type == REB_UTYPE) {
+		VAL_SET(val, REB_INTEGER);
 		if (Compare_Values(D_ARG(1), D_ARG(2), 1)) return R_TRUE;
 	}
 	return R_FALSE;

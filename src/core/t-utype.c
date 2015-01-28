@@ -33,6 +33,7 @@
 
 #define	SET_UTYPE(v,f) VAL_OBJ_FRAME(v) = (f), VAL_SET(v, REB_UTYPE)
 
+static REBOOL Same_Object(REBVAL *val, REBVAL *arg);
 
 /***********************************************************************
 **
@@ -40,6 +41,27 @@
 /*
 ***********************************************************************/
 {
+	REBVAL *f, m;
+	SET_INTEGER(&m, mode);
+	if (mode == 3) {
+		if (VAL_TYPE(a) == VAL_TYPE(b)
+			&& VAL_OBJ_FRAME(a) == VAL_OBJ_FRAME(b)
+		) return TRUE; else return FALSE;
+	}
+	if (IS_UTYPE(a)) {
+		f = GET_UTYPE_METHOD(".COMPARE",a);
+		if (f && IS_FUNCTION(f)) {
+			f = Apply_Func(0,f,a,b,&m,0);
+			if (IS_TRUE(f)) return TRUE;
+		}
+	}
+	if (IS_UTYPE(b)) {
+		f = GET_UTYPE_METHOD(".COMPARE",b);
+		if (f && IS_FUNCTION(f)) {
+			f = Apply_Func(0,f,a,b,&m,0);
+			if (IS_TRUE(f)) return TRUE;
+		}
+	}
 	return FALSE;
 }
 
