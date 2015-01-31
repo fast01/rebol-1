@@ -1261,12 +1261,12 @@ STOID Mold_Error(REBVAL *value, REB_MOLD *mold, REBFLG molded)
 
 	case REB_UTYPE:
 		if (!molded) {
-			f = GET_UTYPE_METHOD(".FORM",value);
-			if (f && ANY_FUNC(f)) goto custom;
+			f = Find_Utype_Method(value,Make_Word(".FORM",0));
+			if (f) goto custom;
 			Form_Object(value, mold);
 		} else {
-			f = GET_UTYPE_METHOD(".MOLD",value);
-			if (f && ANY_FUNC(f)) goto custom;
+			f = Find_Utype_Method(value,Make_Word(".MOLD",0));
+			if (f) goto custom;
 			Mold_Object(value, mold);
 		}
 		break;

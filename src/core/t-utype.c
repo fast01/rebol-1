@@ -1,4 +1,3 @@
-#include <stdio.h>
 /***********************************************************************
 **
 **  REBOL [R3] Language Interpreter and Run-time Environment
@@ -35,6 +34,26 @@
 
 static REBOOL Same_Object(REBVAL *val, REBVAL *arg);
 
+REBVAL *Find_Utype_Method(REBVAL *u, REBINT sym)
+{
+	REBVAL *v = Find_Word_Value(VAL_OBJ_FRAME(u), Make_Word(".METHODS",0));
+	if (!v || !IS_OBJECT(v)) return NULL;
+	v = Find_Word_Value(VAL_OBJ_FRAME(v), sym);
+	if (!v || !IS_FUNCTION(v)) return NULL;
+	return v;
+}
+
+REBVAL *Try_Utype_Method(REBVAL *ds, REBYTE *word)
+{
+	REBVAL *f;
+	if (!D_ARG(1) || ! IS_UTYPE(D_ARG(1))) return NULL;
+	f = Find_Utype_Method(D_ARG(1),Make_Word(word,0));
+	if (!f) Trap_Arg(D_ARG(1));
+	f =  Apply_Func(0,f,D_ARG(1),D_ARG(2),D_ARG(3),D_ARG(4),D_ARG(5),D_ARG(7),D_ARG(7),D_ARG(8),D_ARG(9),0);
+	DS_RET_VALUE(f);
+	return f;
+}
+
 /***********************************************************************
 **
 */	REBINT CT_Utype(REBVAL *a, REBVAL *b, REBINT mode)
@@ -49,14 +68,14 @@ static REBOOL Same_Object(REBVAL *val, REBVAL *arg);
 		) return TRUE; else return FALSE;
 	}
 	if (IS_UTYPE(a)) {
-		f = GET_UTYPE_METHOD(".COMPARE",a);
+		f = Find_Utype_Method(a,Make_Word(".COMPARE",0));
 		if (f && IS_FUNCTION(f)) {
 			f = Apply_Func(0,f,a,b,&m,0);
 			if (IS_TRUE(f)) return TRUE;
 		}
 	}
 	if (IS_UTYPE(b)) {
-		f = GET_UTYPE_METHOD(".COMPARE",b);
+		f = Find_Utype_Method(a,Make_Word(".COMPARE",0));
 		if (f && IS_FUNCTION(f)) {
 			f = Apply_Func(0,f,a,b,&m,0);
 			if (IS_TRUE(f)) return TRUE;
@@ -226,8 +245,8 @@ static REBOOL Same_Object(REBVAL *val, REBVAL *arg);
 			default: Trap_Action(REB_UTYPE, action);
 		} // switch
 
-		val = Find_Word_Value(VAL_OBJ_FRAME(val), sym);
-		if (val && IS_FUNCTION(val)) {
+		val = Find_Utype_Method(val, sym);
+		if (val) {
 			val = Apply_Func(0,val,D_ARG(1),D_ARG(2),D_ARG(3),D_ARG(4),D_ARG(5),D_ARG(7),D_ARG(7),D_ARG(8),D_ARG(9),0);
 			// fail if unset!
 			if ((! IS_DATATYPE(val)) 
@@ -246,20 +265,5 @@ ok:
 
 	DS_RET_VALUE(value);
 	return R_RET;
-}
-
-/***********************************************************************
-**
-*/	REBVAL *Try_Utype_Method(REBVAL *ds, REBYTE *word)
-/*
-***********************************************************************/
-{
-	REBVAL *f;
-	if (!D_ARG(1) || ! IS_UTYPE(D_ARG(1))) return NULL;
-	f = GET_UTYPE_METHOD(word,D_ARG(1));
-	if (!f || !IS_FUNCTION(f)) Trap_Arg(D_ARG(1));
-	f =  Apply_Func(0,f,D_ARG(1),D_ARG(2),D_ARG(3),D_ARG(4),D_ARG(5),D_ARG(7),D_ARG(7),D_ARG(8),D_ARG(9),0);
-	DS_RET_VALUE(f);
-	return f;
 }
 

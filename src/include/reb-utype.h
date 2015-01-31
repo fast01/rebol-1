@@ -24,7 +24,5 @@
 **  Author:  Giulio Lunati <giuliolunati@gmail.com>
 **
 ***********************************************************************/
-
-#define GET_UTYPE_METHOD(word,obj) Find_Word_Value(VAL_OBJ_FRAME(obj), Make_Word(word,0))
-
+REBVAL *Find_Utype_Method(REBVAL *u, REBINT sym);
 REBVAL *Try_Utype_Method(REBVAL *ds, REBYTE *word);
