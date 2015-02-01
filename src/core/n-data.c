@@ -592,6 +592,7 @@ static int Check_Char_Range(REBVAL *val, REBINT limit)
 /*
 ***********************************************************************/
 {
+	if (Try_Utype_Method(ds, ".TYPEQ")) return R_RET;
 	REBCNT type = VAL_TYPE(D_ARG(1));
 
 	if (D_REF(2))	// /word
